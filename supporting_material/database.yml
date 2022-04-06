@@ -11,7 +11,7 @@ Parameters:
     Type: String  
 Resources:
  
-  myDBSubnetGroup:
+  myDBSubnetGroup11:
     Type: "AWS::RDS::DBSubnetGroup"
     Properties: 
       DBSubnetGroupDescription: "Subnets to use for the DB"
