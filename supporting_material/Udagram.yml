@@ -101,6 +101,9 @@ Resources:
                 - Key: Name 
                   Value: !Sub ${EnvironmentName} Private Subnet (AZ2)  
 
+
+    # Network Address Translation (NAT) Gateways          
+
     NatGateway1EIP:
       Type: AWS::EC2::EIP
       DependsOn: InternetGatewayAttachment
@@ -124,7 +127,8 @@ Resources:
         Properties:
             AllocationId: !GetAtt NatGateway2EIP.AllocationId
             SubnetId: !Ref PublicSubnet2                    
-
+         
+    # Routing Configuration
     PublicRouteTable:
         Type: AWS::EC2::RouteTable
         Properties: 
@@ -132,7 +136,8 @@ Resources:
             Tags: 
                 - Key: Name 
                   Value: !Sub ${EnvironmentName} Public Routes
-
+    
+    # Rule that directs all traffic to Internet Gateway
     DefaultPublicRoute: 
         Type: AWS::EC2::Route
         DependsOn: InternetGatewayAttachment
@@ -140,20 +145,22 @@ Resources:
             RouteTableId: !Ref PublicRouteTable
             DestinationCidrBlock: 0.0.0.0/0
             GatewayId: !Ref InternetGateway
-
+    
+    # Associating public route table with first public subnet
     PublicSubnet1RouteTableAssociation:
         Type: AWS::EC2::SubnetRouteTableAssociation
         Properties:
             RouteTableId: !Ref PublicRouteTable
             SubnetId: !Ref PublicSubnet1
 
+    # Associating public route table with second public subnet
     PublicSubnet2RouteTableAssociation:
         Type: AWS::EC2::SubnetRouteTableAssociation
         Properties:
             RouteTableId: !Ref PublicRouteTable
             SubnetId: !Ref PublicSubnet2
     
-
+    # First private route table attached with VPC
     PrivateRouteTable1:
         Type: AWS::EC2::RouteTable
         Properties: 
@@ -162,19 +169,22 @@ Resources:
                 - Key: Name 
                   Value: !Sub ${EnvironmentName} Private Routes (AZ1)
 
+    # Rule that direct all internal traffic to first NAT Gateway
     DefaultPrivateRoute1:
         Type: AWS::EC2::Route
         Properties:
             RouteTableId: !Ref PrivateRouteTable1
             DestinationCidrBlock: 0.0.0.0/0
             NatGatewayId: !Ref NatGateway1
-
+ 
+    # Associating first private route table with first private subnet
     PrivateSubnet1RouteTableAssociation:
         Type: AWS::EC2::SubnetRouteTableAssociation
         Properties:
             RouteTableId: !Ref PrivateRouteTable1
             SubnetId: !Ref PrivateSubnet1
-
+    
+    # Second private route table attached with VPC
     PrivateRouteTable2:
         Type: AWS::EC2::RouteTable
         Properties: 
@@ -182,13 +192,16 @@ Resources:
             Tags: 
                 - Key: Name 
                   Value: !Sub ${EnvironmentName} Private Routes (AZ2)
-
+    
+    # Rule that direct all internal traffic to second NAT Gateway
     DefaultPrivateRoute2:
         Type: AWS::EC2::Route
         Properties:
             RouteTableId: !Ref PrivateRouteTable2
             DestinationCidrBlock: 0.0.0.0/0
             NatGatewayId: !Ref NatGateway2
+
+    # Associating second private route table with second private subnet        
 
     PrivateSubnet2RouteTableAssociation:
         Type: AWS::EC2::SubnetRouteTableAssociation
